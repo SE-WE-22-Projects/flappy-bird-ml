@@ -54,36 +54,20 @@ class Game:
         passed_pipes = []
 
         score = 0
-        done = False
+        has_collided = False
 
-        while not done and (max_score < 0 or score < max_score):
+        while not has_collided and (max_score < 0 or score < max_score):
             pipe = pipes[0]
 
             will_flap = self.controller.will_flap(bird, pipe)
             if will_flap:
                 bird.velocity = FLAP_VEL
 
-            bird.velocity += GRAVITY
-            if bird.velocity > BIRD_MAX_SPEED:
-                bird.velocity = BIRD_MAX_SPEED
-            elif bird.velocity < -BIRD_MAX_SPEED:
-                bird.velocity = -BIRD_MAX_SPEED
-
-            bird.y += bird.velocity
-
-            # Bird collides with top or bottom of the screen
-            if bird.y <= 0 or bird.y > self.height - BIRD_HEIGHT:
-                done = True
-            # Bird collides with pipe
-            elif pipe.collides(bx=BIRD_X, by=bird.y):
-                done = True
-
-            # print(
-            #     f"Collide:  {pipe.gap_bottom_y} {pipe.gap_bottom_y + PIPE_GAP} {bird.y} {done} {pipe.collides(bx=BIRD_X, by=bird.y)}"
-            # )
+            bird.physics_tick()
+            has_collided = bird.check_collusion(self.height, pipe)
 
             # passed the pipe
-            if pipe.x + PIPE_WIDTH < BIRD_X and not pipe.scored:
+            if not has_collided and pipe.has_passed_bird() and not pipe.scored:
                 score += 1
                 pipe.scored = True
                 pipes.append(Pipe.new(pipes[-1].x + PIPE_SPACING, r, self.height))
