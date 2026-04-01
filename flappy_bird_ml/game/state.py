@@ -13,10 +13,15 @@ class Pipe:
     gap_y: int
 
     @classmethod
-    def new(cls, x: int, screen_heght: int):
+    def new(
+        cls,
+        x: int,
+        r: random.Random,
+        screen_heght: int,
+    ):
         return cls(
             x,
-            random.randint(MIN_PIPE_HEGHT, screen_heght - PIPE_GAP - MIN_PIPE_HEGHT),
+            r.randint(MIN_PIPE_HEGHT, screen_heght - PIPE_GAP - MIN_PIPE_HEGHT),
         )
 
 

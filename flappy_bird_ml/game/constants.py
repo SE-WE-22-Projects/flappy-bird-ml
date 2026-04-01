@@ -4,7 +4,7 @@ PIPE_GAP = 100  # vertical gap size
 MIN_PIPE_HEGHT = 80
 PIPE_SPEED = 4  # pixels per frame
 
-PIPE_SEPERATION = 200
+PIPE_INTERVAL = 1600
 
 GRAVITY = 0.5
 FLAP_VEL = -8  # velocity given by a flap

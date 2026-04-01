@@ -11,10 +11,11 @@ from flappy_bird_ml.game.constants import (
     FLAP_VEL,
     GRAVITY,
     PIPE_GAP,
+    PIPE_INTERVAL,
     PIPE_SPEED,
     PIPE_WIDTH,
 )
-from flappy_bird_ml.game.screen import GameScreen, GameScreenPyGame
+from flappy_bird_ml.game.screen import GameScreen, GameScreenEmpty, GameScreenPyGame
 from flappy_bird_ml.game.state import Bird, Pipe
 
 
@@ -31,21 +32,28 @@ class Game:
         self.height = height
         self.width = width
         self.screen = screen
+        self.controller = controller
 
     def run_single(
         self,
-        max_frames: int = -1,
+        max_score: int = -1,
     ):
+        r = random.Random(100)
+
         bird = Bird(self.height / 2, 0)
-        pipes = [Pipe.new(self.width // 2, self.height)]
+
+        pipes = [
+            Pipe(self.width // 3, self.height // 2),
+            Pipe.new(self.width * 2 // 3, r, self.height),
+            Pipe.new(self.width, r, self.height),
+        ]
 
         score = 0
-        frame = 0
         done = False
 
-        while not done and (max_frames < 0 or frame < max_frames):
+        while not done and (max_score < 0 or score < max_score):
             pipe = pipes[0]
-            will_flap = controller.will_flap(bird, pipe)
+            will_flap = self.controller.will_flap(bird, pipe)
             if will_flap:
                 bird.velocity = FLAP_VEL
 
@@ -54,6 +62,8 @@ class Game:
 
             if bird.velocity > BIRD_MAX_SPEED:
                 bird.velocity = BIRD_MAX_SPEED
+            elif bird.velocity < -BIRD_MAX_SPEED:
+                bird.velocity = -BIRD_MAX_SPEED
 
             # Bird collides with top or bottom of the screen
             if bird.y <= 0 or bird.y > self.height - BIRD_HEIGHT:
@@ -71,28 +81,27 @@ class Game:
             # passed the pipe
             if pipe.x < BIRD_X:
                 score += 1
-                pipe.x = self.width
-                pipe.gap_y = random.randint(80, self.height - 60 - PIPE_GAP - 60)
+                pipes.pop(0)
+                pipes.append(Pipe.new(self.width, r, self.height))
 
             for pipe in pipes:
                 pipe.x -= PIPE_SPEED
 
-            screen.display("Playing", score, bird, pipes)
-            frame += 1
+            self.screen.display("Playing", score, bird, pipes)
 
-        screen.display("Ended", score, bird, pipes)
+        self.screen.display("Ended", score, bird, pipes)
 
         return score
 
     def run_interactive(self):
-        if not isinstance(screen, GameScreenPyGame):
+        if not isinstance(self.screen, GameScreenPyGame):
             raise RuntimeError("Called run_interactive with EmptyGameScreen")
 
-        screen.display("Waiting", 0, Bird(self.height / 2, 0), [])
-        screen.wait_input()
+        self.screen.display("Waiting", 0, Bird(self.height / 2, 0), [])
+        self.screen.wait_input()
         while True:
             self.run_single()
-            screen.wait_input()
+            self.screen.wait_input()
 
 
 class PlayerController(Controller):
@@ -104,6 +113,12 @@ class PlayerController(Controller):
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 return True
         return False
+
+
+def simmulate_game(c: Controller):
+    screen = GameScreenEmpty()
+    game = Game(screen, c, 512, 720)
+    return game.run_single(100)
 
 
 if __name__ == "__main__":

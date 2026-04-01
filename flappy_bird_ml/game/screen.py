@@ -10,10 +10,6 @@ GROUND_H = 60
 
 
 class GameScreen(ABC):
-    def __init__(self, width: int, height: int):
-        self.width = width
-        self.height = height
-
     def display(
         self, state: state.State, score: int, bird: state.Bird, pipes: list[state.Pipe]
     ):
@@ -28,12 +24,11 @@ class GameScreenEmpty(GameScreen):
 
 
 class GameScreenPyGame(GameScreenEmpty):
-    def __init__(self, width: int, height: int):
-        super().__init__(width, height)
-
+    def __init__(self, height: int, width: int):
         pygame.display.set_caption("Flappy Bird")
-
-        self.screen = pygame.display.set_mode((width, height))
+        self.height = height
+        self.width = width
+        self.screen = pygame.display.set_mode((height, width))
         self.clock = pygame.time.Clock()
         self.offset = 0
         self.rect = self.screen.get_rect()
