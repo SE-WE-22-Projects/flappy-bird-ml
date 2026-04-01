@@ -17,20 +17,20 @@ def main():
     pop = init_population()
     fitness = evaluate_fitness(pop)
 
-    best_theta, min_score, average_score, best_score = best_individual(pop, fitness)
-    print(
-        f"\nInitial best score: {best_score:.3f} | Min Score: {min_score:.3f} | Average Score: {average_score:.3f}"
-    )
+    best_theta, avg_score, best_score = best_individual(pop, fitness)
+    print(f"Initial best score: {best_score:.3f}  | Average Score: {avg_score:.3f}")
 
     for gen in range(1, GENERATIONS + 1):
         pop, fitness = evolve(pop, fitness)
 
-        current_best_theta, min_score, average_score, current_best_score = (
-            best_individual(pop, fitness)
+        current_best_theta, avg_score, current_best_score = best_individual(
+            pop, fitness
         )
+
         print(
-            f"Gen {gen:03d} | Best score: {current_best_score:.3f} | Min Score: {min_score:.3f} | Average Score: {average_score:.3f}"
+            f"Gen {gen:03d} | Best: {current_best_score:.3f}  | Average: {avg_score:.3f}"
         )
+
         if current_best_score > best_score:
             best_theta = current_best_theta
             best_score = current_best_score
@@ -38,7 +38,7 @@ def main():
     print("Weights (bias + w_y, w_v, w_d, w_gap_y):")
     print(best_theta)
 
-    run_game(GeneticController(best_theta))
+    run_game(GeneticController(best_theta), alg_name="Genetic")
 
 
 if __name__ == "__main__":

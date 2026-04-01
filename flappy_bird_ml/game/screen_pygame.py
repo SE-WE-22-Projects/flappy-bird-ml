@@ -19,7 +19,7 @@ class GameScreenPyGame(GameScreen):
         self,
         height: int,
         width: int,
-        auto_name: str | None = None,
+        alg_name: str | None = None,
     ):
         pygame.display.set_caption("Flappy Bird")
         self.height = height
@@ -29,8 +29,8 @@ class GameScreenPyGame(GameScreen):
         self.offset = 0
         self.rect = self.screen.get_rect()
         self.clouds: list[Cloud] = [Cloud(width, i < 6) for i in range(20)]
-        self.is_auto = auto_name is not None
-        self.auto_name = auto_name
+        self.is_auto = alg_name is not None
+        self.alg_name = alg_name
 
     def display(
         self,
@@ -41,6 +41,13 @@ class GameScreenPyGame(GameScreen):
     ):
         self.offset += PIPE_SPEED
         self.draw_background()
+
+        for c in self.clouds:
+            c.draw(self.screen)
+            c.update()
+        self.clouds = [c for c in self.clouds if c.visible()]
+        if len(self.clouds) < 6 and random.random() < 0.005:
+            self.clouds.append(Cloud(self.width))
 
         self.draw_bird(bird)
 
@@ -129,13 +136,13 @@ class GameScreenPyGame(GameScreen):
         cap_h = 24
         cap_w = PIPE_WIDTH + 8
 
-        bottom_y = pipe.gap_y + PIPE_GAP
-        top_y = pipe.gap_y
-        x = pipe.x - PIPE_WIDTH // 2
+        bottom_y = pipe.gap_bottom_y + PIPE_GAP
+        top_y = pipe.gap_bottom_y
+        x = pipe.x
 
-        self.draw_rect(
-            colors.GREEN, (pipe.x - PIPE_WIDTH, pipe.gap_y, PIPE_WIDTH * 2, PIPE_GAP)
-        )
+        # self.draw_rect(
+        #     colors.GREEN, (pipe.x - PIPE_WIDTH, pipe.gap_y, PIPE_WIDTH * 2, PIPE_GAP)
+        # )
 
         for body_y, body_h, cap_y in [
             (0, top_y - cap_h, top_y - cap_h),  # top pipe
@@ -218,8 +225,8 @@ class GameScreenPyGame(GameScreen):
         )
 
     def draw_auto_name(self):
-        alg_str = f"Algorithm: {self.auto_name}"
-        text_shadow(self.screen, alg_str, FONT_BIG, colors.WHITE, 20, 20)
+        alg_str = f"Algorithm: {self.alg_name}"
+        text_shadow(self.screen, alg_str, FONT_SMALL, colors.WHITE, 10, 10)
 
     def should_retry(self) -> bool:
         while True:

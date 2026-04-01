@@ -67,14 +67,11 @@ class Game:
             if bird.y <= 0 or bird.y > self.height - BIRD_HEIGHT:
                 done = True
             # Bird collides with pipe
-            elif (pipe.x <= BIRD_X <= pipe.x + PIPE_WIDTH) and not (
-                pipe.gap_y <= bird.y + BIRD_HEIGHT // 2
-                and bird.y - BIRD_HEIGHT // 2 <= pipe.gap_y + PIPE_GAP
-            ):
+            elif pipe.collides(bx=BIRD_X, by=bird.y):
                 done = True
 
             # print(
-            #     f"Collide: {gap_top} {gap_bottom} {pipe.gap_y} {pipe.gap_y + PIPE_GAP} {bird.y} {done}"
+            #     f"Collide:  {pipe.gap_bottom_y} {pipe.gap_bottom_y + PIPE_GAP} {bird.y} {done} {pipe.collides(bx=BIRD_X, by=bird.y)}"
             # )
 
             # passed the pipe
@@ -114,8 +111,8 @@ def simmulate_game(c: Controller, seed: int | None = None, max_score: int = 1000
     return game.run_single(seed, max_score)
 
 
-def run_game(c: Controller):
-    screen = GameScreenPyGame(512, 720)
+def run_game(c: Controller, alg_name: str | None = None):
+    screen = GameScreenPyGame(512, 720, alg_name=alg_name)
 
     game = Game(screen, c, 512, 720)
     game.run_interactive()

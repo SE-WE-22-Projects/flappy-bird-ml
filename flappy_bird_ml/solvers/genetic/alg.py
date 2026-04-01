@@ -29,7 +29,9 @@ def init_population():
 
 
 def simmulate(theta):
-    return simmulate_game(GeneticController(theta), random.getrandbits(32))
+    return simmulate_game(
+        GeneticController(theta), random.getrandbits(32), max_score=1000
+    )
 
 
 def evaluate_fitness(pop):
@@ -102,6 +104,5 @@ def best_individual(pop, fitness):
     """Return the best theta and its score."""
     idx = np.argmax(fitness)
     average = np.average(fitness)
-    min = np.min(fitness)
     theta = pop[idx]
-    return theta, min, average, fitness[idx]
+    return theta, average, fitness[idx]
