@@ -1,30 +1,33 @@
+from abc import ABC
+
 import pygame
 
 from flappy_bird_ml.game import colors, state
 from flappy_bird_ml.game.constants import BIRD_X, PIPE_GAP, PIPE_WIDTH
+from flappy_bird_ml.game.util import text_shadow
 
 GROUND_H = 60
 
 
-class GameScreen:
+class GameScreen(ABC):
     def __init__(self, width: int, height: int):
         self.width = width
         self.height = height
 
-    def draw_background(self):
+    def display(
+        self, state: state.State, score: int, bird: state.Bird, pipes: list[state.Pipe]
+    ):
         pass
 
-    def draw_bird(self, bird: state.Bird):
-        pass
-
-    def draw_pipe(self, pipe: state.Pipe):
-        pass
-
-    def show_frame(self):
-        pass
+    def should_retry(self) -> bool:
+        return False
 
 
-class GameScreenPyGame(GameScreen):
+class GameScreenEmpty(GameScreen):
+    pass
+
+
+class GameScreenPyGame(GameScreenEmpty):
     def __init__(self, width: int, height: int):
         super().__init__(width, height)
 
@@ -34,6 +37,28 @@ class GameScreenPyGame(GameScreen):
         self.clock = pygame.time.Clock()
         self.offset = 0
         self.rect = self.screen.get_rect()
+
+    def display(
+        self, state: state.State, score: int, bird: state.Bird, pipes: list[state.Pipe]
+    ):
+        self.draw_background()
+
+        self.draw_bird(bird)
+
+        for pipe in pipes:
+            self.draw_pipe(pipe)
+
+        self.draw_ground()
+
+        if state == "Playing":
+            self.draw_score(score)
+        elif state == "Ended":
+            self._draw_game_over(score)
+        elif state == "Waiting":
+            self._draw_start_screen()
+
+        pygame.display.flip()
+        self.clock.tick(60)
 
     def draw_background(self):
         """
@@ -53,6 +78,7 @@ class GameScreenPyGame(GameScreen):
                 (self.rect.x + self.rect.w, self.rect.y + i),
             )
 
+    def draw_ground(self):
         # ground dirt color
         gnd_y = self.rect.height - GROUND_H
         self.draw_rect(colors.DIRT_COL, (0, gnd_y + 18, self.rect.width, GROUND_H))
@@ -139,12 +165,70 @@ class GameScreenPyGame(GameScreen):
                 colors.PIPE_DARK, (x - 3, cap_y, cap_w, cap_h), 2, border_radius=4
             )
 
-    def show_frame(self):
-        pygame.display.flip()
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
+    def draw_score(self, score: int):
+        score_str = f"Score: {score}"
+        sw = FONT_BIG.size(score_str)[0]
+        text_shadow(
+            self.screen, score_str, FONT_BIG, colors.WHITE, (self.width - sw) - 20, 20
+        )
+
+    def _draw_start_screen(self):
+        title_w = FONT_BIG.size("Flappy Bird")[0]
+        text_shadow(
+            self.screen,
+            "Flappy Bird",
+            FONT_BIG,
+            colors.YELLOW,
+            (self.width - title_w) // 2,
+            220,
+        )
+
+        hint = "Press SPACE to flap"
+        hw = FONT_SMALL.size(hint)[0]
+        text_shadow(
+            self.screen, hint, FONT_SMALL, colors.WHITE, (self.width - hw) // 2, 292
+        )
+
+    def _draw_game_over(self, score: int):
+        go_w = FONT_BIG.size("Game Over")[0]
+        text_shadow(
+            self.screen,
+            "Game Over",
+            FONT_BIG,
+            colors.RED,
+            (self.width - go_w) // 2,
+            190,
+        )
+
+        sc_txt = f"Score : {score}"
+        sc_w = FONT_SMALL.size(sc_txt)[0]
+        text_shadow(
+            self.screen, sc_txt, FONT_SMALL, colors.WHITE, (self.width - sc_w) // 2, 258
+        )
+
+        restart = "SPACE to restart"
+        rw = FONT_SMALL.size(restart)[0]
+        text_shadow(
+            self.screen, restart, FONT_SMALL, colors.WHITE, (self.width - rw) // 2, 350
+        )
+
+    def should_retry(self) -> bool:
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.K_SPACE:
+                    return True
+
+    def wait_input(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    return
 
     def draw_rect(
         self,
@@ -159,3 +243,5 @@ class GameScreenPyGame(GameScreen):
 
 
 pygame.init()
+FONT_BIG = pygame.font.SysFont("Arial", 32, bold=True)
+FONT_SMALL = pygame.font.SysFont("Arial", 22)
