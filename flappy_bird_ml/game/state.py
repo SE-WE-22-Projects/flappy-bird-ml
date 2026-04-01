@@ -14,16 +14,9 @@ class Pipe:
     scored: bool = False
 
     @classmethod
-    def new(
-        cls,
-        x: int,
-        r: random.Random,
-        screen_heght: int,
-    ):
-        return cls(
-            x,
-            r.randint(MIN_PIPE_HEGHT, screen_heght - PIPE_GAP - MIN_PIPE_HEGHT),
-        )
+    def new(cls, x: int, r: random.Random, screen_heght: int):
+        y_pos = r.randint(MIN_PIPE_HEGHT, screen_heght - PIPE_GAP - MIN_PIPE_HEGHT)
+        return cls(x, y_pos)
 
 
 @dataclass

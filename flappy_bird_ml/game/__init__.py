@@ -1,9 +1,5 @@
 import random
-import sys
-from abc import ABC, abstractmethod
 from itertools import chain
-
-import pygame
 
 from flappy_bird_ml.game.constants import (
     BIRD_HEIGHT,
@@ -16,14 +12,10 @@ from flappy_bird_ml.game.constants import (
     PIPE_SPEED,
     PIPE_WIDTH,
 )
-from flappy_bird_ml.game.screen import GameScreen, GameScreenEmpty, GameScreenPyGame
+from flappy_bird_ml.game.controller import Controller, PlayerController
+from flappy_bird_ml.game.screen import GameScreen, GameScreenEmpty
+from flappy_bird_ml.game.screen_pygame import GameScreenPyGame
 from flappy_bird_ml.game.state import Bird, Pipe
-
-
-class Controller(ABC):
-    @abstractmethod
-    def will_flap(self, bird: Bird, next_pipe: Pipe) -> bool:
-        pass
 
 
 class Game:
@@ -114,17 +106,6 @@ class Game:
         while True:
             self.run_single()
             self.screen.wait_input()
-
-
-class PlayerController(Controller):
-    def will_flap(self, bird: Bird, next_pipe: Pipe) -> bool:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                return True
-        return False
 
 
 def simmulate_game(c: Controller, seed: int | None = None, max_score: int = 1000):
