@@ -15,6 +15,10 @@ GROUND_H = 60
 
 
 class GameScreenPyGame(GameScreen):
+    """
+    Screen that displays the game state using pygame.
+    """
+
     def __init__(
         self,
         height: int,

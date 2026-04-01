@@ -5,6 +5,10 @@ from flappy_bird_ml.game import state
 
 
 class GameScreen(ABC):
+    """
+    Handles displaying the game state
+    """
+
     def display(
         self,
         state: state.State,
@@ -19,4 +23,9 @@ class GameScreen(ABC):
 
 
 class GameScreenEmpty(GameScreen):
+    """
+    Game screen that renders nothing.
+    Used during model training to skip unnecessary processing.
+    """
+
     pass

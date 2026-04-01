@@ -1,3 +1,5 @@
+# colors udes by the game
+
 SKY_TOP = (112, 197, 255)
 SKY_BOT = (180, 228, 255)
 GROUND_TOP = (97, 168, 68)

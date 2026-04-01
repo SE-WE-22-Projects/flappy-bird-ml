@@ -11,10 +11,10 @@ class GeneticController(Controller):
 
     def will_flap(self, bird: Bird, next_pipe: Pipe) -> bool:
         features = [
-            1,  # bias
+            1,
             bird.y,
             bird.velocity,
             next_pipe.x - BIRD_X,
-            next_pipe.gap_bottom_y + PIPE_GAP // 2,
+            next_pipe.gap_bottom_y + PIPE_GAP,
         ]
         return np.dot(self.theta, features) > 0
