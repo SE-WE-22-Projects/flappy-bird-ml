@@ -5,12 +5,9 @@ from dataclasses import dataclass
 class Pipe:
     x: int
     gap_y: int
-    gap_size: int
 
 
 @dataclass
-class GameState:
-    bird_y: int
-    bird_velocity: float
-
-    pipes: list[Pipe]
+class Bird:
+    y: int
+    velocity: float
