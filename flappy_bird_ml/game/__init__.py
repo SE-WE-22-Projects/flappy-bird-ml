@@ -1,6 +1,7 @@
 import random
 import sys
 from abc import ABC, abstractmethod
+from itertools import chain
 
 import pygame
 
@@ -11,7 +12,7 @@ from flappy_bird_ml.game.constants import (
     FLAP_VEL,
     GRAVITY,
     PIPE_GAP,
-    PIPE_INTERVAL,
+    PIPE_SPACING,
     PIPE_SPEED,
     PIPE_WIDTH,
 )
@@ -36,23 +37,28 @@ class Game:
 
     def run_single(
         self,
+        seed: int | None = None,
         max_score: int = -1,
     ):
-        r = random.Random(100)
+        r = random.Random(seed)
 
         bird = Bird(self.height / 2, 0)
 
+        start = self.width // 2
         pipes = [
-            Pipe(self.width // 3, self.height // 2),
-            Pipe.new(self.width * 2 // 3, r, self.height),
-            Pipe.new(self.width, r, self.height),
+            Pipe(start, (self.height - PIPE_GAP) // 2),
+            Pipe.new(start + PIPE_SPACING, r, self.height),
+            Pipe.new(start + PIPE_SPACING * 2, r, self.height),
+            Pipe.new(start + PIPE_SPACING * 3, r, self.height),
         ]
+        passed_pipes = []
 
         score = 0
         done = False
 
         while not done and (max_score < 0 or score < max_score):
             pipe = pipes[0]
+
             will_flap = self.controller.will_flap(bird, pipe)
             if will_flap:
                 bird.velocity = FLAP_VEL
@@ -70,7 +76,8 @@ class Game:
                 done = True
             # Bird collides with pipe
             elif (pipe.x <= BIRD_X <= pipe.x + PIPE_WIDTH) and not (
-                pipe.gap_y <= bird.y <= pipe.gap_y + PIPE_GAP
+                pipe.gap_y <= bird.y + BIRD_HEIGHT // 2
+                and bird.y - BIRD_HEIGHT // 2 <= pipe.gap_y + PIPE_GAP
             ):
                 done = True
 
@@ -79,15 +86,20 @@ class Game:
             # )
 
             # passed the pipe
-            if pipe.x < BIRD_X:
+            if pipe.x < BIRD_X and not pipe.scored:
                 score += 1
-                pipes.pop(0)
-                pipes.append(Pipe.new(self.width, r, self.height))
+                pipe.scored = True
+                pipes.append(Pipe.new(pipes[-1].x + PIPE_SPACING, r, self.height))
+                passed_pipes.append(pipes.pop(0))
 
-            for pipe in pipes:
+            for pipe in chain(pipes, passed_pipes):
                 pipe.x -= PIPE_SPEED
 
-            self.screen.display("Playing", score, bird, pipes)
+            for pipe in passed_pipes:
+                if pipe.x < -PIPE_WIDTH:
+                    passed_pipes.pop(0)
+
+            self.screen.display("Playing", score, bird, chain(pipes, passed_pipes))
 
         self.screen.display("Ended", score, bird, pipes)
 
@@ -115,15 +127,19 @@ class PlayerController(Controller):
         return False
 
 
-def simmulate_game(c: Controller):
+def simmulate_game(c: Controller, seed: int | None = None, max_score: int = 1000):
     screen = GameScreenEmpty()
     game = Game(screen, c, 512, 720)
-    return game.run_single(100)
+    return game.run_single(seed, max_score)
+
+
+def run_game(c: Controller):
+    screen = GameScreenPyGame(512, 720)
+
+    game = Game(screen, c, 512, 720)
+    game.run_interactive()
 
 
 if __name__ == "__main__":
-    screen = GameScreenPyGame(720, 512)
     controller = PlayerController()
-
-    game = Game(screen, controller, 512, 720)
-    game.run_interactive()
+    run_game(controller)

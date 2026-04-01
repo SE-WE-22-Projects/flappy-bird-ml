@@ -1,4 +1,5 @@
 from abc import ABC
+from typing import Iterable
 
 import pygame
 
@@ -11,7 +12,11 @@ GROUND_H = 60
 
 class GameScreen(ABC):
     def display(
-        self, state: state.State, score: int, bird: state.Bird, pipes: list[state.Pipe]
+        self,
+        state: state.State,
+        score: int,
+        bird: state.Bird,
+        pipes: Iterable[state.Pipe],
     ):
         pass
 
@@ -28,13 +33,17 @@ class GameScreenPyGame(GameScreenEmpty):
         pygame.display.set_caption("Flappy Bird")
         self.height = height
         self.width = width
-        self.screen = pygame.display.set_mode((height, width))
+        self.screen = pygame.display.set_mode((width, height))
         self.clock = pygame.time.Clock()
         self.offset = 0
         self.rect = self.screen.get_rect()
 
     def display(
-        self, state: state.State, score: int, bird: state.Bird, pipes: list[state.Pipe]
+        self,
+        state: state.State,
+        score: int,
+        bird: state.Bird,
+        pipes: Iterable[state.Pipe],
     ):
         self.draw_background()
 
@@ -125,7 +134,9 @@ class GameScreenPyGame(GameScreenEmpty):
         top_y = pipe.gap_y
         x = pipe.x - PIPE_WIDTH // 2
 
-        # self.draw_rect(colors.GREEN, (x, pipe.gap_y, PIPE_WIDTH, PIPE_GAP))
+        # self.draw_rect(
+        #     colors.GREEN, (pipe.x - PIPE_WIDTH, pipe.gap_y, PIPE_WIDTH * 2, PIPE_GAP)
+        # )
 
         for body_y, body_h, cap_y in [
             (0, top_y - cap_h, top_y - cap_h),  # top pipe

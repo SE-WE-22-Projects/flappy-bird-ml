@@ -11,6 +11,7 @@ State = typing.Literal["Waiting", "Playing", "Ended"]
 class Pipe:
     x: int
     gap_y: int
+    scored: bool = False
 
     @classmethod
     def new(
