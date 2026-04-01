@@ -1,7 +1,7 @@
 import numpy as np
 
 from flappy_bird_ml.game import Controller
-from flappy_bird_ml.game.constants import BIRD_X
+from flappy_bird_ml.game.constants import BIRD_X, PIPE_WIDTH
 from flappy_bird_ml.game.state import Bird, Pipe
 
 
@@ -15,6 +15,6 @@ class GeneticController(Controller):
             bird.y,
             bird.velocity,
             next_pipe.x - BIRD_X,
-            next_pipe.gap_y,
+            next_pipe.gap_y + PIPE_WIDTH // 2,
         ]
         return np.dot(self.theta, features) > 0
