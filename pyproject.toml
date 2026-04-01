@@ -1,5 +1,5 @@
 [project]
-name = "flappy-bird-ml"
+name = "flappy_bird_ml"
 version = "0.1.0"
 description = ""
 authors = [
