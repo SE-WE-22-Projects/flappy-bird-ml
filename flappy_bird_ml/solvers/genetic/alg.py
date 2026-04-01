@@ -1,12 +1,16 @@
+import os
+import random
+from concurrent.futures import ProcessPoolExecutor
+
 import numpy as np
 
 from flappy_bird_ml.game import simmulate_game
 from flappy_bird_ml.solvers.genetic.controller import GeneticController
 
 # number of individuals per generation
-POP_SIZE = 100
+POP_SIZE = 50
 # how many generations to run
-GENERATIONS = 200
+GENERATIONS = 50
 # probability that a gene is copied from parent A
 CROSSOVER_RATE = 0.5
 # probability each weight is perturbed
@@ -24,15 +28,23 @@ def init_population():
     return np.random.randn(POP_SIZE, dim)
 
 
+def simmulate(theta):
+    return simmulate_game(GeneticController(theta), random.getrandbits(32))
+
+
 def evaluate_fitness(pop):
     """
     Return a fitness vector: higher is better.
     Each individual is evaluated by `run_game(theta)` (avg over episodes).
     """
     fitness = []
-    for theta in pop:
-        score = simmulate_game(GeneticController(theta))  # 5 episodes per evaluation
-        fitness.append(score)
+
+    cpu_count = os.cpu_count()
+    assert cpu_count is not None, "Cannot get cpu count"
+
+    with ProcessPoolExecutor(max_workers=int(cpu_count * 0.75)) as executor:
+        for score in executor.map(simmulate, pop):
+            fitness.append(score)
     return np.array(fitness)
 
 
@@ -89,5 +101,7 @@ def evolve(pop, fitness):
 def best_individual(pop, fitness):
     """Return the best theta and its score."""
     idx = np.argmax(fitness)
+    average = np.average(fitness)
+    min = np.min(fitness)
     theta = pop[idx]
-    return theta, fitness[idx]
+    return theta, min, average, fitness[idx]
