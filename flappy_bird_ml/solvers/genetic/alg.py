@@ -44,7 +44,7 @@ def evaluate_fitness(pop):
     cpu_count = os.cpu_count()
     assert cpu_count is not None, "Cannot get cpu count"
 
-    with ProcessPoolExecutor(max_workers=int(cpu_count * 0.75)) as executor:
+    with ProcessPoolExecutor(max_workers=int(cpu_count * 1)) as executor:
         for score in executor.map(simmulate, pop):
             fitness.append(score)
     return np.array(fitness)
