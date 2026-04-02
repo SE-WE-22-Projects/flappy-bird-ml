@@ -1,4 +1,5 @@
 import random
+import sys
 from typing import Iterable
 
 import pygame
@@ -9,6 +10,7 @@ from flappy_bird_ml.game.screen import GameScreen
 from flappy_bird_ml.game.util import text_shadow
 
 pygame.init()
+
 FONT_BIG = pygame.font.SysFont("Arial", 32, bold=True)
 FONT_SMALL = pygame.font.SysFont("Arial", 22)
 GROUND_H = 60
@@ -35,6 +37,7 @@ class GameScreenPyGame(GameScreen):
         self.clouds: list[Cloud] = [Cloud(width, i < 6) for i in range(20)]
         self.is_auto = alg_name is not None
         self.alg_name = alg_name
+        self.speed_mult = 10
 
     def display(
         self,
@@ -70,9 +73,20 @@ class GameScreenPyGame(GameScreen):
 
         if self.is_auto:
             self.draw_auto_name()
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
+                    self.speed_mult = min(100, self.speed_mult + 10)
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
+                    self.speed_mult = max(10, self.speed_mult - 10)
+
+            if self.speed_mult != 10:
+                self.draw_speed()
 
         pygame.display.flip()
-        self.clock.tick(60)
+        self.clock.tick(6 * self.speed_mult)
 
     def draw_background(self):
         """
@@ -186,6 +200,18 @@ class GameScreenPyGame(GameScreen):
         sw = FONT_BIG.size(score_str)[0]
         text_shadow(
             self.screen, score_str, FONT_BIG, colors.WHITE, (self.width - sw) - 20, 20
+        )
+
+    def draw_speed(self):
+        speed_str = f"Speed: {self.speed_mult // 10}X"
+        sw, sh = FONT_SMALL.size(speed_str)
+        text_shadow(
+            self.screen,
+            speed_str,
+            FONT_SMALL,
+            colors.WHITE,
+            (self.width - sw) - 20,
+            (self.height - sh) - 20,
         )
 
     def _draw_start_screen(self):

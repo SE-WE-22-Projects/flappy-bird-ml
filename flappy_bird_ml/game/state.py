@@ -75,3 +75,12 @@ class Bird:
             # )
             #
         return False
+
+
+@dataclass
+class Frame:
+    bird: Bird
+    pipe: Pipe
+    score: int
+    frame_score: float
+    is_dead: bool

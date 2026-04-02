@@ -2,11 +2,7 @@ import random
 from itertools import chain
 
 from flappy_bird_ml.game.constants import (
-    BIRD_HEIGHT,
-    BIRD_MAX_SPEED,
-    BIRD_X,
     FLAP_VEL,
-    GRAVITY,
     PIPE_GAP,
     PIPE_SPACING,
     PIPE_SPEED,
@@ -14,7 +10,6 @@ from flappy_bird_ml.game.constants import (
 )
 from flappy_bird_ml.game.controller import Controller
 from flappy_bird_ml.game.screen import GameScreen
-from flappy_bird_ml.game.screen_pygame import GameScreenPyGame
 from flappy_bird_ml.game.state import Bird, Pipe
 
 
@@ -87,6 +82,8 @@ class Game:
         return score
 
     def run_interactive(self):
+        from flappy_bird_ml.game.screen_pygame import GameScreenPyGame
+
         if not isinstance(self.screen, GameScreenPyGame):
             raise RuntimeError("Called run_interactive with EmptyGameScreen")
 

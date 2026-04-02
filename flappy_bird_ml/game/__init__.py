@@ -1,10 +1,9 @@
 import typing
 
 from flappy_bird_ml.game.constants import FLAP_VEL
-from flappy_bird_ml.game.controller import Controller, PlayerController
+from flappy_bird_ml.game.controller import Controller
 from flappy_bird_ml.game.game import Game
 from flappy_bird_ml.game.screen import GameScreenEmpty
-from flappy_bird_ml.game.screen_pygame import GameScreenPyGame
 from flappy_bird_ml.game.state import Bird, Pipe
 
 
@@ -42,6 +41,8 @@ def simmulate_game_state(
 
 
 def run_game(c: Controller, alg_name: str | None = None):
+    from flappy_bird_ml.game.screen_pygame import GameScreenPyGame
+
     screen = GameScreenPyGame(512, 720, alg_name=alg_name)
 
     game = Game(screen, c, 512, 720)
@@ -49,5 +50,7 @@ def run_game(c: Controller, alg_name: str | None = None):
 
 
 if __name__ == "__main__":
+    from flappy_bird_ml.game.controller_player import PlayerController
+
     controller = PlayerController()
     run_game(controller)
