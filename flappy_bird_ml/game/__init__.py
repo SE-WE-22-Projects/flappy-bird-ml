@@ -1,6 +1,6 @@
 import typing
 
-from flappy_bird_ml.game.constants import FLAP_VEL
+from flappy_bird_ml.game.constants import FLAP_VEL, PIPE_SPEED
 from flappy_bird_ml.game.controller import Controller
 from flappy_bird_ml.game.game import Game
 from flappy_bird_ml.game.screen import GameScreenEmpty
@@ -44,6 +44,8 @@ def simmulate_game_state(
 
             cb(bird, pipe, position_score, False)
             score += position_score
+
+        pipe.x -= PIPE_SPEED
 
 
 def run_game(c: Controller, alg_name: str | None = None):
