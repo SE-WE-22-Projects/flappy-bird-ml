@@ -1,3 +1,4 @@
+import itertools
 import os
 import random
 from concurrent.futures import ProcessPoolExecutor
@@ -28,10 +29,10 @@ def init_population():
     return np.random.randn(POP_SIZE, dim)
 
 
-def simmulate(theta):
-    return simmulate_game(
-        GeneticController(theta), random.getrandbits(32), max_score=10000
-    )
+def simmulate(args):
+    seed, theta = args
+
+    return simmulate_game(GeneticController(theta), seed, max_score=1000)
 
 
 def evaluate_fitness(pop):
@@ -43,9 +44,10 @@ def evaluate_fitness(pop):
 
     cpu_count = os.cpu_count()
     assert cpu_count is not None, "Cannot get cpu count"
+    seed = random.getrandbits(32)
 
     with ProcessPoolExecutor(max_workers=int(cpu_count * 1)) as executor:
-        for score in executor.map(simmulate, pop):
+        for score in executor.map(simmulate, zip(itertools.repeat(seed), pop)):
             fitness.append(score)
     return np.array(fitness)
 
