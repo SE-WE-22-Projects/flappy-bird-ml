@@ -96,6 +96,8 @@ class QLearningController(Controller):
 def train(controller, episodes=10000):
     for episode in range(episodes):
         best_score = -1e10
+        score_count = 1
+        total_score = 0
 
         for pipe_y in range(100, 400 + 1, DY_BIN_SIZE):
             for bird_y in range(0, 512 + 1, Y_BIN_SIZE):
@@ -105,19 +107,25 @@ def train(controller, episodes=10000):
                 ):
                     score = simmulate_game_state(
                         controller,
-                        Pipe(200, pipe_y),
+                        Pipe(720, pipe_y),
                         bird=Bird(y=bird_y, velocity=vel / 2),
                         cb=controller.step_update,
                     )
                     if score > best_score:
-                        print(f"New best {score}")
-                    best_score = max(best_score, score)
+                        print(f"New best {score}           ", end="\r")
+                        score_count = 1
+                        best_score = score
+                    elif score == best_score:
+                        score_count += 1
+                        print(f"New best {score} x{score_count}", end="\r")
+
+                    total_score += score
 
         print(
-            f"Episode {episode}, Score: {best_score}, Epsilon: {controller.epsilon:.3f}"
+            f"Episode {episode}, Best Score: {best_score}x{score_count}, Total Score {total_score} Epsilon: {controller.epsilon:.3f}"
         )
 
-        controller.epsilon = max(0.01, controller.epsilon * 0.75)
+        controller.epsilon = max(0.01, controller.epsilon * 0.95)
 
 
 def load():
@@ -142,6 +150,7 @@ def run_training():
 
 if __name__ == "__main__":
     ctl = run_training()
+    # ctl = load()
 
     ctl.epsilon = 0
     run_game(ctl, "q_learn")
