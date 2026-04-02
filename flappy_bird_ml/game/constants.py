@@ -12,7 +12,7 @@ MIN_PIPE_HEGHT = 100
 # pixels per frame that the pipes move at
 PIPE_SPEED = 4
 # space between 2 pipe sets
-PIPE_SPACING = PIPE_SPEED * 50
+PIPE_SPACING = PIPE_SPEED * 75
 
 GRAVITY = 0.5
 # velocity given by a flap

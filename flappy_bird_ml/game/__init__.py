@@ -19,25 +19,31 @@ def simmulate_game_state(
     bird: Bird,
     cb: typing.Callable[[Bird, Pipe, float, bool], None],
 ):
-    has_collided = False
+    score = 0
 
-    while not has_collided:
+    while True:
         will_flap = c.will_flap(bird, pipe)
         if will_flap:
             bird.velocity = FLAP_VEL
 
         bird.physics_tick()
-        has_collided = bird.check_collusion(512, pipe)
 
         if bird.check_collusion(512, pipe):
             # bird, pipe, reward, done
-            cb(bird, pipe, -1000, True)
-            return -1000
-        elif not has_collided and pipe.has_passed_bird():
+            cb(bird, pipe, -100000, True)
+            score -= 100000
+            return score
+        elif pipe.has_passed_bird():
             cb(bird, pipe, 10, False)
-            return 10
+            score += 10
+            return score
         else:
-            cb(bird, pipe, 0.1, False)
+            position_score = 1
+            if bird.y > 50 or bird.y < 400:
+                position_score += 1
+
+            cb(bird, pipe, position_score, False)
+            score += position_score
 
 
 def run_game(c: Controller, alg_name: str | None = None):
