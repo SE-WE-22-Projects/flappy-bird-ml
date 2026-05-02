@@ -107,9 +107,23 @@ def train_efficiently(episodes=10000):
     return ctl
 
 
+def load_model():
+    with open(
+        Path(__file__).parent.parent.parent.parent / "models" / "q_model.pickle", "rb"
+    ) as f:
+        table = pickle.load(f)
+        ctl = EfficientQLearner()
+        ctl.q_table = defaultdict(lambda: [0.0, 0.0], table)
+        ctl.epsilon = 0
+
+    return ctl
+
+
 if __name__ == "__main__":
     # Train
-    ctl = train_efficiently(500000)
+    # ctl = train_efficiently(500000)
+
+    ctl = load_model()
 
     # Test
     ctl.epsilon = 0
