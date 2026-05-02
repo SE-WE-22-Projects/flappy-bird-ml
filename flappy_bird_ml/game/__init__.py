@@ -34,8 +34,8 @@ def simmulate_game_state(
             score -= 100000
             return score
         elif pipe.has_passed_bird():
-            cb(bird, pipe, 10, False)
-            score += 10
+            cb(bird, pipe, 1000, True)
+            score += 1000
             return score
         else:
             position_score = 1

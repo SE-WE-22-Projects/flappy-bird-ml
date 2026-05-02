@@ -12,10 +12,10 @@ from flappy_bird_ml.game.controller import Controller
 from flappy_bird_ml.game.state import Bird, Pipe
 
 # Discretization bins
-Y_BIN_SIZE = 4
-VEL_BIN_SIZE = 1
-DX_BIN_SIZE = 2
-DY_BIN_SIZE = 4
+Y_BIN_SIZE = 10
+VEL_BIN_SIZE = 2
+DX_BIN_SIZE = 10
+DY_BIN_SIZE = 10
 
 ACTIONS = [0, 1]  # 0 = no flap, 1 = flap
 
@@ -35,9 +35,6 @@ class QLearningController(Controller):
 
     # State Discretization
     def discretize(self, bird, pipe) -> Tuple:
-        # Bird Y
-        y_bin = int(bird.y // Y_BIN_SIZE)
-
         # Velocity (-8 to 8, step 0.5, normalize index)
         vel_bin = int((bird.velocity + 8) / VEL_BIN_SIZE)
 
@@ -52,7 +49,7 @@ class QLearningController(Controller):
         dy = bird.y - gap_center
         dy_bin = int((dy + 256) // DY_BIN_SIZE)  # shift to avoid negatives
 
-        return (y_bin, vel_bin, dx_bin, dy_bin)
+        return (vel_bin, dx_bin, dy_bin)
 
     # Policy (ε-greedy)
     def select_action(self, state):
@@ -101,10 +98,7 @@ def train(controller, episodes=10000):
 
         for pipe_y in range(100, 400 + 1, DY_BIN_SIZE):
             for bird_y in range(0, 512 + 1, Y_BIN_SIZE):
-                for vel in range(
-                    -16,
-                    16 + 1,
-                ):
+                for vel in range(-16, 17, 2):
                     score = simmulate_game_state(
                         controller,
                         Pipe(720, pipe_y),
