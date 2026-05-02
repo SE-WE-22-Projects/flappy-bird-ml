@@ -5,18 +5,19 @@ from pathlib import Path
 from typing import Tuple
 
 from flappy_bird_ml.game import run_game, simmulate_game_state
-from flappy_bird_ml.game.constants import BIRD_X, PIPE_GAP
+from flappy_bird_ml.game.constants import BIRD_X, PIPE_GAP, PIPE_SPACING
 from flappy_bird_ml.game.controller import Controller
-from flappy_bird_ml.game.state import Bird, Pipe 
+from flappy_bird_ml.game.state import Bird, Pipe
+
 
 class EfficientQLearner(Controller):
     def __init__(self):
         # We use a lower Alpha and a higher Gamma for stability
         self.q_table = defaultdict(lambda: [0.0, 0.0])
-        self.alpha = 0.1     
-        self.gamma = 1.0     # We want the bird to care deeply about the distant pipe
-        self.epsilon = 0.001 # Keep exploration very low or zero if training long enough
-        
+        self.alpha = 0.1
+        self.gamma = 1.0  # We want the bird to care deeply about the distant pipe
+        self.epsilon = 0.001
+
         self.prev_state = None
         self.prev_action = None
 
@@ -26,15 +27,15 @@ class EfficientQLearner(Controller):
         The bird doesn't need to see 500px ahead. 140px is enough.
         """
         # 1. Horizontal distance capped at 140px (reduces state table size)
-        dx = min(280, (pipe.x - BIRD_X)) // 10
-        
+        dx = min(PIPE_SPACING, (pipe.x - BIRD_X)) // 10
+
         # 2. Vertical distance to the gap center
         gap_center = pipe.gap_bottom_y + (PIPE_GAP // 2)
         dy = (bird.y - gap_center) // 10
-        
+
         # 3. Velocity (coarse bins to prevent 'overthinking')
         vel = int(bird.velocity)
-        
+
         return (dx, dy, vel)
 
     def select_action(self, state):
@@ -43,27 +44,29 @@ class EfficientQLearner(Controller):
         # Return index of max value
         return 0 if self.q_table[state][0] >= self.q_table[state][1] else 1
 
-    def step_update(self, bird, pipe, reward, done):
+    def step_update(self, bird, pipe, done):
         if self.prev_state is None:
             return
 
         next_state = self.discretize(bird, pipe)
-        
+
         # REWARD SHAPING: This is the 'secret sauce'
         # Default survival reward is low.
-        actual_reward = 0.1 
-        
+        actual_reward = 0.1
+
         # Massive penalty for dying
         if done:
             actual_reward = -1000
         # Reward for being vertically aligned with the gap
-        elif abs(bird.y - (pipe.gap_bottom_y + PIPE_GAP//2)) < 20:
-            actual_reward = 1 
+        elif abs(bird.y - (pipe.gap_bottom_y + PIPE_GAP // 2)) < 20:
+            actual_reward = 1
 
         # Update
         old_q = self.q_table[self.prev_state][self.prev_action]
         max_future_q = max(self.q_table[next_state])
-        self.q_table[self.prev_state][self.prev_action] += self.alpha * (actual_reward + self.gamma * max_future_q - old_q)
+        self.q_table[self.prev_state][self.prev_action] += self.alpha * (
+            actual_reward + self.gamma * max_future_q - old_q
+        )
 
     def will_flap(self, bird, next_pipe) -> bool:
         state = self.discretize(bird, next_pipe)
@@ -72,31 +75,42 @@ class EfficientQLearner(Controller):
         self.prev_action = action
         return action == 1
 
-def train_efficiently(episodes=50000):
+
+def train_efficiently(episodes=10000):
     ctl = EfficientQLearner()
-    
+
     # Optional: Load previous progress to keep training
     # ctl.load()
 
+    score = 0
+    total = 0
     for ep in range(episodes):
         # Start conditions
         b = Bird(y=256, velocity=0)
-        p = Pipe(720, random.randint(140, 360))
-        
-        score = simmulate_game_state(ctl, p, bird=b, cb=ctl.step_update)
+
+        c_score = simmulate_game_state(ctl, bird=b, cb=ctl.step_update)
+        score = max(score, c_score)
+        total += c_score
 
         if ep % 5000 == 0:
-            print(f"Episode {ep} | States: {len(ctl.q_table)} | Score: {score}")
+            print(
+                f"Episode {ep} | States: {len(ctl.q_table)} | Score: {score} | avg {total / 5000: 0.2f}"
+            )
+            score = 0
+            total = 0
 
     # Save the 'Brain'
-    with open("../../models/q_model.pickle", "wb") as f:
+    with open(
+        Path(__file__).parent.parent.parent.parent / "models" / "q_model.pickle", "wb"
+    ) as f:
         pickle.dump(dict(ctl.q_table), f)
     return ctl
 
+
 if __name__ == "__main__":
     # Train
-    ctl = train_efficiently(1000000)
-    
+    ctl = train_efficiently(500000)
+
     # Test
     ctl.epsilon = 0
     run_game(ctl, "q_learn")
