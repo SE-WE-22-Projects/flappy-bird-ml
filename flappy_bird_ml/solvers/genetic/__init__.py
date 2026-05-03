@@ -53,4 +53,8 @@ def play():
 
 
 if __name__ == "__main__":
-    play()
+    IS_TRAINING = True
+    if IS_TRAINING:
+        main()
+    else:
+        play()
