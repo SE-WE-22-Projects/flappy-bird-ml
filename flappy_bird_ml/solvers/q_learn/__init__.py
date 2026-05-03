@@ -13,10 +13,10 @@ from flappy_bird_ml.game.state import Bird, Pipe
 class EfficientQLearner(Controller):
     def __init__(self):
         # We use a lower Alpha and a higher Gamma for stability
-        self.q_table = defaultdict(lambda: [0.0, 0.0])
-        self.alpha = 0.1
-        self.gamma = 1.0  # We want the bird to care deeply about the distant pipe
-        self.epsilon = 0.001
+        self.q_table = defaultdict(lambda: [0.0, 0.0])  # Q-values for each state-action pair
+        self.alpha = 0.1  # Learning rate for Q updates how strongly new rewards update old Q-values
+        self.gamma = 1.0  # Discount factor for future rewards : how much future rewards matter vs immediate rewardx
+        self.epsilon = 0.001  # Exploration rate for random actions probability of choosing a random action. Higher = more exploration; lower = more exploitation of learned policy.
 
         self.prev_state = None
         self.prev_action = None
@@ -121,7 +121,7 @@ def load_model():
 
 if __name__ == "__main__":
     # Train
-    # ctl = train_efficiently(500000)
+    # ctl = train_efficiently(1500000)
 
     ctl = load_model()
 
