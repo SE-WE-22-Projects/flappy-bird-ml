@@ -18,8 +18,8 @@ class EfficientQLearner(Controller):
         self.gamma = 1.0  # Discount factor for future rewards : how much future rewards matter vs immediate rewardx
         self.epsilon = 0.001  # Exploration rate for random actions probability of choosing a random action. Higher = more exploration; lower = more exploitation of learned policy.
 
-        self.prev_state = None
-        self.prev_action = None
+        self.prev_state = None  # Last state we acted from
+        self.prev_action = None  # Last action taken
 
     def discretize(self, bird, pipe) -> Tuple:
         """
@@ -36,19 +36,21 @@ class EfficientQLearner(Controller):
         # 3. Velocity (coarse bins to prevent 'overthinking')
         vel = int(bird.velocity)
 
-        return (dx, dy, vel)
+        return (dx, dy, vel)  # Discrete state used as the Q-table key
 
     def select_action(self, state):
+        # Epsilon-greedy: explore sometimes, exploit otherwise
         if random.random() < self.epsilon:
             return random.choice([0, 1])
         # Return index of max value
         return 0 if self.q_table[state][0] >= self.q_table[state][1] else 1
 
     def step_update(self, bird, pipe, done):
+        # Apply the Q-learning update using the latest transition
         if self.prev_state is None:
             return
 
-        next_state = self.discretize(bird, pipe)
+        next_state = self.discretize(bird, pipe)  # State after the action
 
         # REWARD SHAPING:
         # Default survival reward is low.
@@ -61,7 +63,7 @@ class EfficientQLearner(Controller):
         elif abs(bird.y - (pipe.gap_bottom_y + PIPE_GAP // 2)) < 20:
             actual_reward = 1
 
-        # Update
+        # Update Q-value for the previous state-action
         old_q = self.q_table[self.prev_state][self.prev_action]
         max_future_q = max(self.q_table[next_state])
         self.q_table[self.prev_state][self.prev_action] += self.alpha * (
@@ -69,6 +71,7 @@ class EfficientQLearner(Controller):
         )
 
     def will_flap(self, bird, next_pipe) -> bool:
+        # Choose an action for this frame and remember it
         state = self.discretize(bird, next_pipe)
         action = self.select_action(state)
         self.prev_state = state
