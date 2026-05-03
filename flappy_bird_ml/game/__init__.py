@@ -1,6 +1,7 @@
+import random
 import typing
 
-from flappy_bird_ml.game.constants import FLAP_VEL, PIPE_SPEED
+from flappy_bird_ml.game.constants import BIRD_X, FLAP_VEL, PIPE_GAP, PIPE_SPEED
 from flappy_bird_ml.game.controller import Controller
 from flappy_bird_ml.game.game import Game
 from flappy_bird_ml.game.screen import GameScreenEmpty
@@ -15,11 +16,14 @@ def simmulate_game(c: Controller, seed: int | None = None, max_score: int = 1000
 
 def simmulate_game_state(
     c: Controller,
-    pipe: Pipe,
     bird: Bird,
-    cb: typing.Callable[[Bird, Pipe, float, bool], None],
+    cb: typing.Callable[[Bird, Pipe, bool], None],
 ):
     score = 0
+
+    pipes = 1000
+
+    pipe = Pipe(300, random.randint(140, 360))
 
     while True:
         will_flap = c.will_flap(bird, pipe)
@@ -30,20 +34,19 @@ def simmulate_game_state(
 
         if bird.check_collusion(512, pipe):
             # bird, pipe, reward, done
-            cb(bird, pipe, -100000, True)
-            score -= 100000
+            cb(bird, pipe, True)
             return score
         elif pipe.has_passed_bird():
-            cb(bird, pipe, 10, False)
-            score += 10
-            return score
-        else:
-            position_score = 1
-            if bird.y > 50 or bird.y < 400:
-                position_score += 1
+            if pipes < 0:
+                cb(bird, pipe, True)
+                return score + 1
 
-            cb(bird, pipe, position_score, False)
-            score += position_score
+            cb(bird, pipe, False)
+            pipe = Pipe(300, random.randint(140, 360))
+            pipes -= 1
+            score += 1
+        else:
+            cb(bird, pipe, False)
 
         pipe.x -= PIPE_SPEED
 
