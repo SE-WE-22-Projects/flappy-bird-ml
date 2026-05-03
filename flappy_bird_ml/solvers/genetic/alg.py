@@ -87,10 +87,8 @@ def evolve(pop, fitness):
     Performes a GA iteration.
     Returns new population and its fitness.
     """
-    # 1. Selection
     pop_sel = tournament_selection(pop, fitness)
 
-    # 2. Crossover (pairwise)
     children = []
     for i in range(0, POP_SIZE, 2):
         a = pop_sel[i]
@@ -99,7 +97,6 @@ def evolve(pop, fitness):
         child_b = crossover(b, a)
         children.extend([child_a, child_b])
 
-    # 3. Mutation
     mutated_children = [mutate(c) for c in children]
 
     new_pop = np.array(mutated_children)
