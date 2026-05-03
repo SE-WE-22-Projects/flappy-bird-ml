@@ -1,8 +1,7 @@
-from pathlib import Path
-
 import numpy
 
 from flappy_bird_ml.game import run_game
+from flappy_bird_ml.solvers import model_dir
 from flappy_bird_ml.solvers.genetic.alg import (
     GENERATIONS,
     POP_SIZE,
@@ -14,7 +13,7 @@ from flappy_bird_ml.solvers.genetic.alg import (
 from flappy_bird_ml.solvers.genetic.controller import GeneticController
 
 
-def main():
+def train():
     print(f"Population size: {POP_SIZE}")
     print(f"Generations     : {GENERATIONS}")
 
@@ -42,19 +41,19 @@ def main():
     print("Weights (bias + w_y, w_v, w_d, w_gap_y):")
     print(best_theta)
 
-    numpy.save(Path("./models/genetic.npy"), best_theta)
+    numpy.save(model_dir() / "genetic.npy", best_theta)
 
     run_game(GeneticController(best_theta), alg_name="Genetic")
 
 
 def play():
-    best_theta = numpy.load(Path("./models/genetic.npy"))
+    best_theta = numpy.load(model_dir() / "genetic.npy")
     run_game(GeneticController(best_theta), alg_name="Genetic")
 
 
 if __name__ == "__main__":
     IS_TRAINING = True
     if IS_TRAINING:
-        main()
+        train()
     else:
         play()
