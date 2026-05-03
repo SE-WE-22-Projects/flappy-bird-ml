@@ -1,3 +1,5 @@
-from flappy_bird_ml.solvers.genetic import GeneticController
+from pathlib import Path
 
-__all__ = ["GeneticController"]
+
+def model_dir():
+    return (Path(__file__).parent.parent.parent / "models").resolve()

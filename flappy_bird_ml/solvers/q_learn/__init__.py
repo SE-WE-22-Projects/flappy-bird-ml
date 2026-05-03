@@ -8,6 +8,7 @@ from flappy_bird_ml.game import run_game, simmulate_game_state
 from flappy_bird_ml.game.constants import BIRD_X, PIPE_GAP, PIPE_SPACING
 from flappy_bird_ml.game.controller import Controller
 from flappy_bird_ml.game.state import Bird, Pipe
+from flappy_bird_ml.solvers import model_dir
 
 
 class EfficientQLearner(Controller):
@@ -82,13 +83,9 @@ class EfficientQLearner(Controller):
 def train_efficiently(episodes=10000):
     ctl = EfficientQLearner()
 
-    # Optional: Load previous progress to keep training
-    # ctl.load()
-
     score = 0
     total = 0
     for ep in range(episodes):
-        # Start conditions
         b = Bird(y=256, velocity=0)
 
         c_score = simmulate_game_state(ctl, bird=b, cb=ctl.step_update)
@@ -102,18 +99,13 @@ def train_efficiently(episodes=10000):
             score = 0
             total = 0
 
-    # Save the 'Brain'
-    with open(
-        Path(__file__).parent.parent.parent.parent / "models" / "q_model.pickle", "wb"
-    ) as f:
+    with open(model_dir() / "q_model.pickle", "wb") as f:
         pickle.dump(dict(ctl.q_table), f)
     return ctl
 
 
 def load_model():
-    with open(
-        Path(__file__).parent.parent.parent.parent / "models" / "q_model.pickle", "rb"
-    ) as f:
+    with open(model_dir() / "q_model.pickle", "rb") as f:
         table = pickle.load(f)
         ctl = EfficientQLearner()
         ctl.q_table = defaultdict(lambda: [0.0, 0.0], table)
@@ -124,9 +116,11 @@ def load_model():
 
 if __name__ == "__main__":
     # Train
-    # ctl = train_efficiently(1500000)
-
-    ctl = load_model()
+    IS_TRAINING = True
+    if IS_TRAINING: 
+        ctl = train_efficiently(500000)
+    else:
+        ctl = load_model()
 
     # Test
     ctl.epsilon = 0
