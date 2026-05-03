@@ -121,9 +121,11 @@ def load_model():
 
 if __name__ == "__main__":
     # Train
-    # ctl = train_efficiently(500000)
-
-    ctl = load_model()
+    IS_TRAINING = True
+    if IS_TRAINING: 
+        ctl = train_efficiently(500000)
+    else:
+        ctl = load_model()
 
     # Test
     ctl.epsilon = 0
