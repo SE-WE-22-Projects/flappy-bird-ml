@@ -50,7 +50,7 @@ class EfficientQLearner(Controller):
 
         next_state = self.discretize(bird, pipe)
 
-        # REWARD SHAPING: This is the 'secret sauce'
+        # REWARD SHAPING:
         # Default survival reward is low.
         actual_reward = 0.1
 
